@@ -1,0 +1,9 @@
+### Create Tenant
+
+POST http://localhost:8080/api/tenants
+Content-Type: application/json
+
+{
+  "name": "Atchison Law Group",
+  "slug": "atchison-law"
+}
