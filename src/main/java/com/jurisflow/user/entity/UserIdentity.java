@@ -4,7 +4,15 @@ import com.jurisflow.common.entity.BaseEntity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "user_identities")
+@Table(
+        name = "user_identities",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_identity_provider_user",
+                        columnNames = {"provider", "provider_user_id"}
+                )
+        }
+)
 public class UserIdentity extends BaseEntity {
 
 

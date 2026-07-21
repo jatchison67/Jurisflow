@@ -4,6 +4,9 @@ import com.jurisflow.common.entity.BaseEntity;
 import com.jurisflow.tenant.entity.Tenant;
 import jakarta.persistence.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
 @Table(name = "roles")
 public class Role extends BaseEntity {
@@ -20,6 +23,15 @@ public class Role extends BaseEntity {
 
     @Column(nullable = false)
     private boolean systemRole;
+
+
+    @ManyToMany
+    @JoinTable(
+            name = "role_permissions",
+            joinColumns = @JoinColumn(name = "role_id"),
+            inverseJoinColumns = @JoinColumn(name = "permission_id")
+    )
+    private Set<Permission> permissions = new HashSet<>();
 
 
     protected Role() {
@@ -51,6 +63,16 @@ public class Role extends BaseEntity {
 
     public boolean isSystemRole() {
         return systemRole;
+    }
+
+
+    public Set<Permission> getPermissions() {
+        return Set.copyOf(permissions);
+    }
+
+
+    public void addPermission(Permission permission) {
+        permissions.add(permission);
     }
 
 }

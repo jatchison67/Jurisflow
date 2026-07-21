@@ -36,16 +36,18 @@ class TenantServiceTest {
 
     @Test
     void createsTenantAndPublishesCreatedEvent() {
-        Tenant tenant = new Tenant("Atchison Law Group", "atchison-law");
         when(tenantRepository.findByName("Atchison Law Group")).thenReturn(Optional.empty());
         when(tenantRepository.findBySlug("atchison-law")).thenReturn(Optional.empty());
-        when(tenantRepository.save(tenant)).thenReturn(tenant);
+        when(tenantRepository.save(org.mockito.ArgumentMatchers.any(Tenant.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         Tenant result = tenantService.createTenant("Atchison Law Group", "atchison-law");
 
         ArgumentCaptor<TenantCreatedEvent> event = ArgumentCaptor.forClass(TenantCreatedEvent.class);
+        ArgumentCaptor<Tenant> savedTenant = ArgumentCaptor.forClass(Tenant.class);
+        verify(tenantRepository).save(savedTenant.capture());
         verify(eventPublisher).publishEvent(event.capture());
-        assertThat(result).isSameAs(tenant);
+        assertThat(result).isSameAs(savedTenant.getValue());
         assertThat(event.getValue().getTenantName()).isEqualTo("Atchison Law Group");
     }
 

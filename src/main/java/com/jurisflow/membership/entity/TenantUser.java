@@ -3,7 +3,11 @@ package com.jurisflow.membership.entity;
 import com.jurisflow.common.entity.BaseEntity;
 import com.jurisflow.tenant.entity.Tenant;
 import com.jurisflow.user.entity.User;
+import com.jurisflow.role.entity.Role;
 import jakarta.persistence.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(
@@ -41,6 +45,15 @@ public class TenantUser extends BaseEntity {
     private boolean active = true;
 
 
+    @ManyToMany
+    @JoinTable(
+            name = "tenant_user_roles",
+            joinColumns = @JoinColumn(name = "tenant_user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<Role> roles = new HashSet<>();
+
+
     protected TenantUser() {
     }
 
@@ -75,6 +88,16 @@ public class TenantUser extends BaseEntity {
 
         this.active = false;
 
+    }
+
+
+    public Set<Role> getRoles() {
+        return Set.copyOf(roles);
+    }
+
+
+    public void addRole(Role role) {
+        roles.add(role);
     }
 
 }

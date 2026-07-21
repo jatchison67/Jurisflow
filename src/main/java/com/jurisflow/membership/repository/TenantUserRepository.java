@@ -4,6 +4,7 @@ import com.jurisflow.membership.entity.TenantUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 public interface TenantUserRepository
@@ -14,5 +15,7 @@ public interface TenantUserRepository
             UUID tenantId,
             UUID userId
     );
+
+    List<TenantUser> findAllByTenantId(UUID tenantId);
 
 }
