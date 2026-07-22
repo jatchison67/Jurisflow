@@ -5,7 +5,6 @@ import com.jurisflow.role.entity.Role;
 import com.jurisflow.role.entity.RolePermission;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,6 +18,6 @@ public interface RolePermissionRepository extends JpaRepository<RolePermission, 
 
     void deleteByRoleAndPermission(Role role, Permission permission);
 
-    List<RolePermission> findByRoleIn(Collection<Role> roles);
+    List<RolePermission> findByRoleIn(List<Role> roles);
 
 }

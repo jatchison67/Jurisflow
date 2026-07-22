@@ -4,6 +4,7 @@ import com.jurisflow.membership.entity.TenantUser;
 import com.jurisflow.membership.entity.TenantUserRole;
 import com.jurisflow.membership.repository.TenantUserRepository;
 import com.jurisflow.membership.repository.TenantUserRoleRepository;
+import com.jurisflow.role.entity.Role;
 import com.jurisflow.role.entity.RolePermission;
 import com.jurisflow.role.repository.RolePermissionRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -100,21 +102,28 @@ public class AuthorizationServiceImpl
                                 new EntityNotFoundException(
                                         "Tenant membership not found."));
 
+        List<TenantUserRole> assignments =
+                tenantUserRoleRepository.findByTenantUser(tenantUser);
+
+        List<Role> roles = assignments.stream()
+                .map(TenantUserRole::getRole)
+                .toList();
+
         Set<String> permissionCodes = new HashSet<>();
 
-        for (TenantUserRole assignment :
-                tenantUserRoleRepository.findByTenantUser(
-                        tenantUser)) {
+        if (roles.isEmpty()) {
+            return permissionCodes;
+        }
 
-            for (RolePermission rolePermission :
-                    rolePermissionRepository.findByRole(
-                            assignment.getRole())) {
+        List<RolePermission> rolePermissions =
+                rolePermissionRepository.findByRoleIn(roles);
 
-                permissionCodes.add(
-                        rolePermission
-                                .getPermission()
-                                .getCode());
-            }
+        for (RolePermission rolePermission : rolePermissions) {
+
+            permissionCodes.add(
+                    rolePermission
+                            .getPermission()
+                            .getCode());
         }
 
         return permissionCodes;
