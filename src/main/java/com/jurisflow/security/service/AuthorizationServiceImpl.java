@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -38,15 +39,27 @@ public class AuthorizationServiceImpl
     }
 
     @Override
-    public boolean hasRole(
+    public boolean hasRoleName(
             UUID tenantId,
             UUID userId,
             String roleName) {
 
-        return getRoles(
-                tenantId,
-                userId)
-                .contains(roleName);
+        TenantUser tenantUser =
+                tenantUserRepository
+                        .findByTenantIdAndUserId(
+                                tenantId,
+                                userId)
+                        .orElseThrow(() ->
+                                new EntityNotFoundException(
+                                        "Tenant membership not found."));
+
+        return tenantUserRoleRepository
+                .findByTenantUser(tenantUser)
+                .stream()
+                .anyMatch(role ->
+                        role.getRole()
+                                .getName()
+                                .equals(roleName));
     }
 
     @Override
@@ -62,7 +75,7 @@ public class AuthorizationServiceImpl
     }
 
     @Override
-    public Set<String> getRoles(
+    public Set<String> getRoleNames(
             UUID tenantId,
             UUID userId) {
 
@@ -102,30 +115,22 @@ public class AuthorizationServiceImpl
                                 new EntityNotFoundException(
                                         "Tenant membership not found."));
 
-        List<TenantUserRole> assignments =
-                tenantUserRoleRepository.findByTenantUser(tenantUser);
-
-        List<Role> roles = assignments.stream()
-                .map(TenantUserRole::getRole)
-                .toList();
-
-        Set<String> permissionCodes = new HashSet<>();
+        List<Role> roles =
+                tenantUserRoleRepository.findByTenantUser(tenantUser)
+                        .stream()
+                        .map(TenantUserRole::getRole)
+                        .toList();
 
         if (roles.isEmpty()) {
-            return permissionCodes;
+            return Set.of();
         }
 
-        List<RolePermission> rolePermissions =
-                rolePermissionRepository.findByRoleIn(roles);
-
-        for (RolePermission rolePermission : rolePermissions) {
-
-            permissionCodes.add(
-                    rolePermission
-                            .getPermission()
-                            .getCode());
-        }
-
-        return permissionCodes;
+        return rolePermissionRepository.findByRoleIn(roles)
+                .stream()
+                .map(rolePermission ->
+                        rolePermission
+                                .getPermission()
+                                .getCode())
+                .collect(Collectors.toSet());
     }
 }

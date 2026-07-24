@@ -5,7 +5,7 @@ import java.util.UUID;
 
 public interface AuthorizationService {
 
-    boolean hasRole(
+    boolean hasRoleName(
             UUID tenantId,
             UUID userId,
             String roleName);
@@ -15,12 +15,11 @@ public interface AuthorizationService {
             UUID userId,
             String permissionCode);
 
-    Set<String> getRoles(
+    Set<String> getRoleNames(
             UUID tenantId,
             UUID userId);
 
     Set<String> getPermissionCodes(
             UUID tenantId,
             UUID userId);
-
 }
